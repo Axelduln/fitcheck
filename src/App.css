@@ -7,6 +7,16 @@
   gap: 1.5rem;
 }
 
+/* Capture needs a big camera so reference points are visible from 2-3 m. */
+.app--wide {
+  max-width: 1100px;
+}
+
+.app--wide .camera-stage video {
+  max-height: 80vh;
+  object-fit: contain;
+}
+
 .app-title {
   font-size: 2rem;
   margin: 0;
