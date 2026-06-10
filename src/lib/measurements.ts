@@ -22,13 +22,15 @@ export interface Measurements {
 export const SHOULDER_OFFSET_CM = 5
 
 /**
- * The hip landmarks sit at the hip joint (≈ trochanter height, 0.530 ×
- * stature) while the inseam starts at the crotch (≈ 0.485 × stature) —
- * a gap of ~4.5% of stature. Segment proportions from Drillis &
- * Contini (1966). Tunable. Validated against a real tape measurement
- * on 2026-06-10 (see ACCURACY.md).
+ * Vertical gap between the MediaPipe hip landmarks and the crotch, as
+ * a fraction of stature. The anatomical hip-joint→crotch gap is ~4.5%
+ * of stature (Drillis & Contini 1966), but MediaPipe places its hip
+ * landmarks well below the anatomical joint: tape comparison on
+ * 2026-06-10 (subject 1, 184 cm — see ACCURACY.md) showed an empirical
+ * landmark→crotch gap of only ~1.2% of stature. Tuned to that; n=1,
+ * revalidate with every new subject.
  */
-export const CROTCH_OFFSET_STATURE_FRACTION = 0.045
+export const CROTCH_OFFSET_STATURE_FRACTION = 0.012
 
 const LEFT_SHOULDER = 11
 const RIGHT_SHOULDER = 12
