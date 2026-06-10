@@ -132,3 +132,67 @@ button.primary:hover {
 .debug-table tr.low-visibility td {
   color: #dc2626;
 }
+
+.height-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.height-form input {
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #9ca3af;
+  max-width: 10rem;
+}
+
+.form-error {
+  color: #dc2626;
+  margin: 0;
+}
+
+.measure-status {
+  font-size: 1.75rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.results-header h2 {
+  margin: 0;
+}
+
+.results-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 1.25rem;
+}
+
+.results-table td {
+  padding: 0.5rem 0.75rem 0.5rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.confidence-high {
+  color: #16a34a;
+}
+
+.confidence-medium {
+  color: #d97706;
+}
+
+.confidence-low {
+  color: #dc2626;
+}
+
+.disclaimer {
+  font-size: 1rem;
+  opacity: 0.8;
+}

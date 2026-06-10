@@ -1,4 +1,5 @@
 const REPEAT_COOLDOWN_MS = 5000
+const DIFFERENT_TEXT_GAP_MS = 3000
 
 /**
  * Spoken guidance via the browser's built-in speech synthesis.
@@ -21,10 +22,13 @@ export class VoiceAnnouncer {
     }
   }
 
-  speak(text: string, nowMs: number): void {
+  speak(text: string, nowMs: number, opts?: { force?: boolean }): void {
     if (!this.enabled || typeof speechSynthesis === 'undefined') return
-    if (text === this.lastText && nowMs - this.lastTimeMs < REPEAT_COOLDOWN_MS)
-      return
+    if (!opts?.force) {
+      const sinceLast = nowMs - this.lastTimeMs
+      if (text === this.lastText && sinceLast < REPEAT_COOLDOWN_MS) return
+      if (text !== this.lastText && sinceLast < DIFFERENT_TEXT_GAP_MS) return
+    }
     const voice = speechSynthesis
       .getVoices()
       .find((v) => v.localService && v.lang.startsWith('en'))

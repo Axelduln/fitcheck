@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision'
-import { createPoseLandmarker, selectMostProminent } from '../lib/pose'
+import {
+  createPoseLandmarker,
+  selectMostProminent,
+  type NormalizedLandmark,
+} from '../lib/pose'
+import type { FrameDims } from '../lib/measurements'
 import { FpsMeter } from '../lib/fps'
 import {
   computeBodyStatus,
@@ -20,9 +25,30 @@ const STATUS_MESSAGES: Record<BodyStatus, string> = {
   full: 'Full body detected — all measurement points tracked',
 }
 
-export function CameraView() {
+const EXPORT_BUFFER_FRAMES = 60
+
+interface ExportFrame {
+  timestampMs: number
+  landmarks: NormalizedLandmark[]
+}
+
+interface CameraViewProps {
+  /** Called for every processed video frame with the selected pose. */
+  onFrame?: (
+    pose: NormalizedLandmark[] | null,
+    dims: FrameDims,
+    nowMs: number,
+  ) => void
+}
+
+export function CameraView({ onFrame }: CameraViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const onFrameRef = useRef(onFrame)
+  useEffect(() => {
+    onFrameRef.current = onFrame
+  })
+  const exportFramesRef = useRef<ExportFrame[]>([])
   const [state, setState] = useState<CameraState>('starting')
   const [mirrored, setMirrored] = useState(false)
   const [bodyStatus, setBodyStatus] = useState<BodyStatus>('none')
@@ -77,6 +103,17 @@ export function CameraView() {
       if (stableStatus !== null) {
         setBodyStatus(stableStatus)
         announcer.speak(STATUS_MESSAGES[stableStatus], nowMs)
+      }
+
+      onFrameRef.current?.(
+        pose,
+        { width: canvas.width, height: canvas.height },
+        nowMs,
+      )
+      if (pose) {
+        const buffer = exportFramesRef.current
+        buffer.push({ timestampMs: nowMs, landmarks: pose })
+        if (buffer.length > EXPORT_BUFFER_FRAMES) buffer.shift()
       }
       if (nowMs - lastDebugUpdate >= DEBUG_UPDATE_MS) {
         lastDebugUpdate = nowMs
@@ -227,6 +264,33 @@ export function CameraView() {
         >
           {debugOpen ? 'Hide debug' : 'Show debug'}
         </button>
+        {debugOpen && (
+          <button
+            type="button"
+            className="debug-toggle"
+            onClick={() => {
+              const canvas = canvasRef.current
+              const payload = {
+                recordedAt: new Date().toISOString(),
+                dims: canvas
+                  ? { width: canvas.width, height: canvas.height }
+                  : null,
+                frames: exportFramesRef.current,
+              }
+              const blob = new Blob([JSON.stringify(payload, null, 2)], {
+                type: 'application/json',
+              })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `landmarks-${Date.now()}.json`
+              a.click()
+              URL.revokeObjectURL(url)
+            }}
+          >
+            Export landmarks
+          </button>
+        )}
       </div>
       {debugOpen && <DebugPanel fps={fps} visibilities={visibilities} />}
     </div>
