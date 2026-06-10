@@ -27,8 +27,14 @@ plainly here with options, not papered over.
 | 2026-06-10 | Alex r2 | 184       | Shoulder width | 43      | 43–44        | ~0.5     | ✅         |
 | 2026-06-10 | Alex r2 | 184       | Arm length     | 55–56   | 57–58        | ~2       | ✅         |
 | 2026-06-10 | Alex r2 | 184       | Inseam (v2)    | 87–88   | 80–83        | ~6       | ❌         |
-| 2026-06-10 | Alex r2 | 184       | Inseam (v3)    | 87–88   | (retest)     |          |            |
 | 2026-06-10 | Alex r2 | 184       | Torso length   | 44–46\* | 53–55        | n/a\*    | see note   |
+| 2026-06-10 | Alex r3 | 184       | Shoulder width | 43      | 43–44        | ~0.5     | ✅         |
+| 2026-06-10 | Alex r3 | 184       | Arm length     | 55–56   | 57–59        | ~2.5     | ✅         |
+| 2026-06-10 | Alex r3 | 184       | Inseam (v3)    | 87–88   | 85–87        | ~1.5     | ✅         |
+| 2026-06-10 | Alex r3 | 184       | Torso length   | 44–46\* | 54–56        | n/a\*    | see note   |
+
+**Milestone 2 verdict: PASS** — shoulder, arm, and inseam all within
+±4 cm on the final formulas (r3, all high confidence).
 
 Notes:
 
@@ -55,8 +61,15 @@ Notes:
   hip-joint (trochanter) height at the side of the body, not over the
   chest. Torso is also not part of the ±4 cm acceptance set
   (shoulder/arm/inseam are).
-- Run-to-run variance observed (arm 55–56 in r1 vs 57–58 in r2):
+- Run-to-run variance observed (arm 55–56 in r1 vs 57–59 in r3):
   ~2 cm — acceptable inside ±4, worth watching as more data arrives.
+- Screen-recording review of the overlay (r3): hip/heel/shoulder
+  reference points track plausibly; **wrist landmarks drift to the side
+  of the arm**, which likely explains the consistent ~2–2.5 cm high
+  bias on arm length. The hand landmarks (pinky/index/thumb) are
+  visibly off the hands — irrelevant, no measurement reads them. If
+  more subjects show the same arm bias, consider a small negative arm
+  correction or the `pose_landmarker_heavy` model.
 - Laptop webcam, ~2–3 m distance.
 
 ## Milestone 4 — circumferences
