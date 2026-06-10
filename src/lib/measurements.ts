@@ -23,9 +23,10 @@ export const SHOULDER_OFFSET_CM = 5
 
 /**
  * The hip landmarks sit at the hip joint (≈ trochanter height, 0.530 ×
- * stature) while the inseam starts at the crotch (≈ 0.485 × stature),
- * so the hip→knee→ankle path overshoots the inseam by ~4.5% of
- * stature. Segment proportions from Drillis & Contini (1966). Tunable.
+ * stature) while the inseam starts at the crotch (≈ 0.485 × stature) —
+ * a gap of ~4.5% of stature. Segment proportions from Drillis &
+ * Contini (1966). Tunable. Validated against a real tape measurement
+ * on 2026-06-10 (see ACCURACY.md).
  */
 export const CROTCH_OFFSET_STATURE_FRACTION = 0.045
 
@@ -37,10 +38,8 @@ const LEFT_WRIST = 15
 const RIGHT_WRIST = 16
 const LEFT_HIP = 23
 const RIGHT_HIP = 24
-const LEFT_KNEE = 25
-const RIGHT_KNEE = 26
-const LEFT_ANKLE = 27
-const RIGHT_ANKLE = 28
+const LEFT_HEEL = 29
+const RIGHT_HEEL = 30
 
 interface PixelPoint {
   x: number
@@ -98,8 +97,13 @@ export function armLengthCm(
 }
 
 /**
- * Inseam: hip→knee→ankle path averaged over both legs, minus the
- * hip-joint-to-crotch offset (see CROTCH_OFFSET_STATURE_FRACTION).
+ * Inseam in the garment convention: crotch to floor. The crotch sits
+ * CROTCH_OFFSET_STATURE_FRACTION of stature below the hip-joint
+ * landmarks; the heels stand on the floor. Vertical distance is used —
+ * valid because quality.ts only passes upright standing frames.
+ * (A hip→knee→ankle path was tried first and read ~11 cm short of a
+ * tape measurement: the ankle bone sits ~4% of stature above the
+ * floor. See ACCURACY.md, 2026-06-10.)
  */
 export function inseamCm(
   pose: NormalizedLandmark[],
@@ -107,21 +111,14 @@ export function inseamCm(
   cmPerPixel: number,
   heightCm: number,
 ): number | null {
-  const sides: Array<[number, number, number]> = [
-    [LEFT_HIP, LEFT_KNEE, LEFT_ANKLE],
-    [RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE],
-  ]
-  const lengths: number[] = []
-  for (const [h, k, a] of sides) {
-    const hip = toPixels(pose[h], dims)
-    const knee = toPixels(pose[k], dims)
-    const ankle = toPixels(pose[a], dims)
-    if (!hip || !knee || !ankle) continue
-    lengths.push((dist(hip, knee) + dist(knee, ankle)) * cmPerPixel)
-  }
-  if (lengths.length === 0) return null
-  const legPath = lengths.reduce((a, b) => a + b, 0) / lengths.length
-  return legPath - CROTCH_OFFSET_STATURE_FRACTION * heightCm
+  const lh = toPixels(pose[LEFT_HIP], dims)
+  const rh = toPixels(pose[RIGHT_HIP], dims)
+  const lheel = toPixels(pose[LEFT_HEEL], dims)
+  const rheel = toPixels(pose[RIGHT_HEEL], dims)
+  if (!lh || !rh || !lheel || !rheel) return null
+  const hipToFloor = (mid(lheel, rheel).y - mid(lh, rh).y) * cmPerPixel
+  if (hipToFloor <= 0) return null
+  return hipToFloor - CROTCH_OFFSET_STATURE_FRACTION * heightCm
 }
 
 /** Shoulder midpoint to hip midpoint. */

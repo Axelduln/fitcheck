@@ -19,14 +19,29 @@ plainly here with options, not papered over.
 
 ## Milestone 2 — length measurements
 
-| Date | Subject | Height cm | Measure        | Tape cm | App range cm | Error cm | Within ±4? |
-| ---- | ------- | --------- | -------------- | ------- | ------------ | -------- | ---------- |
-|      |         |           | Shoulder width |         |              |          |            |
-|      |         |           | Arm length     |         |              |          |            |
-|      |         |           | Inseam         |         |              |          |            |
-|      |         |           | Torso length   |         |              |          |            |
+| Date       | Subject | Height cm | Measure        | Tape cm | App range cm | Error cm | Within ±4? |
+| ---------- | ------- | --------- | -------------- | ------- | ------------ | -------- | ---------- |
+| 2026-06-10 | Alex    | (tbd)     | Shoulder width | ≈41–42  | 41–42        | ~0       | ✅         |
+| 2026-06-10 | Alex    | (tbd)     | Arm length     | 55      | 55–56        | ~0.5     | ✅         |
+| 2026-06-10 | Alex    | (tbd)     | Inseam (v1)    | 87–89   | 75–77        | ~12      | ❌         |
+| 2026-06-10 | Alex    | (tbd)     | Inseam (v2)    | 87–89   | (retest)     |          |            |
+| 2026-06-10 | Alex    | (tbd)     | Torso length   | (tbd)   | 54–55        |          |            |
 
-Notes (lighting, distance, clothing, camera):
+Notes:
+
+- Arm convention confirmed: tape from shoulder joint (1–2 cm in from the
+  highest point), relaxed straight arm, down to the wrist bone — matches
+  the landmark path, no tuning needed.
+- **Inseam v1 failed**: formula measured hip→knee→ankle, but the ankle
+  landmark sits ~4% of stature above the floor while the tape reference
+  (and garment convention) is crotch→floor. Reformulated (v2) as
+  vertical hip-joint→heel distance minus the crotch offset — retest
+  pending.
+- Torso: Alex's tape follows the body surface from the iliac crest up to
+  ~1–2 cm below the acromion; the app measures a straight chord between
+  shoulder-joint and hip-joint midpoints. Tape value pending — endpoint
+  convention vs. surface-curvature question still open.
+- Laptop webcam, ~2–3 m distance.
 
 ## Milestone 4 — circumferences
 

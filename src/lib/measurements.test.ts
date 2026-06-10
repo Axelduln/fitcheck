@@ -39,14 +39,20 @@ describe('armLengthCm', () => {
 })
 
 describe('inseamCm', () => {
-  it('subtracts the crotch offset from the leg path', () => {
+  it('measures crotch to floor: hip-to-heel vertical minus crotch offset', () => {
     const pose = syntheticStandingPose()
-    // left leg: (460,520)→(455,700)→(450,880); symmetric on the right
-    const thigh = Math.hypot(5, 180)
-    const shin = Math.hypot(5, 180)
-    const expected =
-      (thigh + shin) * SCALE - CROTCH_OFFSET_STATURE_FRACTION * HEIGHT_CM
+    // hip mid y=0.52, heel mid y=0.90 → 380 px vertical
+    const expected = 380 * SCALE - CROTCH_OFFSET_STATURE_FRACTION * HEIGHT_CM
     expect(inseamCm(pose, DIMS, SCALE, HEIGHT_CM)).toBeCloseTo(expected, 4)
+  })
+
+  it('rejects a pose with heels above the hips', () => {
+    const pose = syntheticStandingPose()
+    for (const i of [29, 30]) {
+      const lm = pose[i]
+      if (lm) pose[i] = { ...lm, y: 0.1 }
+    }
+    expect(inseamCm(pose, DIMS, SCALE, HEIGHT_CM)).toBeNull()
   })
 })
 
