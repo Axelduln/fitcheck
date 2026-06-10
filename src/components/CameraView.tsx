@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision'
-import { createPoseLandmarker, selectMostProminent } from '../lib/pose'
+import {
+  createPoseLandmarker,
+  selectMostProminent,
+  type NormalizedLandmark,
+} from '../lib/pose'
+import type { FrameDims } from '../lib/measurements'
 import { FpsMeter } from '../lib/fps'
 import {
   computeBodyStatus,
@@ -20,9 +25,74 @@ const STATUS_MESSAGES: Record<BodyStatus, string> = {
   full: 'Full body detected — all measurement points tracked',
 }
 
-export function CameraView() {
+const EXPORT_BUFFER_FRAMES = 60
+
+/** Landmarks the measurement math reads (calibration + lengths). */
+const REFERENCE_LANDMARK_IDS = [2, 5, 11, 12, 13, 14, 15, 16, 23, 24, 29, 30]
+
+/** The exact segments measured: shoulder line and both arm paths. */
+const MEASUREMENT_CONNECTIONS = [
+  { start: 11, end: 12 },
+  { start: 11, end: 13 },
+  { start: 13, end: 15 },
+  { start: 12, end: 14 },
+  { start: 14, end: 16 },
+]
+
+const MEASUREMENT_COLOR = '#3b82f6'
+
+/** Torso chord (shoulder mid → hip mid) and inseam line (hip mid → heel mid). */
+function drawMeasurementMidlines(
+  ctx: CanvasRenderingContext2D,
+  pose: NormalizedLandmark[],
+  width: number,
+  height: number,
+) {
+  const point = (i: number) => {
+    const lm = pose[i]
+    return lm ? { x: lm.x * width, y: lm.y * height } : null
+  }
+  const midpoint = (
+    a: { x: number; y: number } | null,
+    b: { x: number; y: number } | null,
+  ) => (a && b ? { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } : null)
+
+  const shoulderMid = midpoint(point(11), point(12))
+  const hipMid = midpoint(point(23), point(24))
+  const heelMid = midpoint(point(29), point(30))
+  if (!shoulderMid || !hipMid) return
+
+  ctx.strokeStyle = MEASUREMENT_COLOR
+  ctx.lineWidth = 5
+  ctx.beginPath()
+  ctx.moveTo(shoulderMid.x, shoulderMid.y)
+  ctx.lineTo(hipMid.x, hipMid.y)
+  if (heelMid) ctx.lineTo(heelMid.x, heelMid.y)
+  ctx.stroke()
+}
+
+interface ExportFrame {
+  timestampMs: number
+  landmarks: NormalizedLandmark[]
+}
+
+interface CameraViewProps {
+  /** Called for every processed video frame with the selected pose. */
+  onFrame?: (
+    pose: NormalizedLandmark[] | null,
+    dims: FrameDims,
+    nowMs: number,
+  ) => void
+}
+
+export function CameraView({ onFrame }: CameraViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const onFrameRef = useRef(onFrame)
+  useEffect(() => {
+    onFrameRef.current = onFrame
+  })
+  const exportFramesRef = useRef<ExportFrame[]>([])
   const [state, setState] = useState<CameraState>('starting')
   const [mirrored, setMirrored] = useState(false)
   const [bodyStatus, setBodyStatus] = useState<BodyStatus>('none')
@@ -67,9 +137,25 @@ export function CameraView() {
           const drawer = new DrawingUtils(ctx)
           drawer.drawConnectors(pose, PoseLandmarker.POSE_CONNECTIONS, {
             color: '#22c55e',
-            lineWidth: 3,
+            lineWidth: 2,
           })
-          drawer.drawLandmarks(pose, { color: '#f97316', radius: 4 })
+          drawer.drawLandmarks(pose, { color: '#f97316', radius: 3 })
+          // measurement reference overlay: blue = measured segments,
+          // red = the landmarks the math reads
+          drawer.drawConnectors(pose, MEASUREMENT_CONNECTIONS, {
+            color: MEASUREMENT_COLOR,
+            lineWidth: 5,
+          })
+          drawMeasurementMidlines(ctx, pose, canvas.width, canvas.height)
+          const referencePoints = REFERENCE_LANDMARK_IDS.flatMap((i) => {
+            const lm = pose[i]
+            return lm ? [lm] : []
+          })
+          drawer.drawLandmarks(referencePoints, {
+            color: '#ef4444',
+            fillColor: '#ef4444',
+            radius: 6,
+          })
         }
       }
 
@@ -77,6 +163,17 @@ export function CameraView() {
       if (stableStatus !== null) {
         setBodyStatus(stableStatus)
         announcer.speak(STATUS_MESSAGES[stableStatus], nowMs)
+      }
+
+      onFrameRef.current?.(
+        pose,
+        { width: canvas.width, height: canvas.height },
+        nowMs,
+      )
+      if (pose) {
+        const buffer = exportFramesRef.current
+        buffer.push({ timestampMs: nowMs, landmarks: pose })
+        if (buffer.length > EXPORT_BUFFER_FRAMES) buffer.shift()
       }
       if (nowMs - lastDebugUpdate >= DEBUG_UPDATE_MS) {
         lastDebugUpdate = nowMs
@@ -227,6 +324,33 @@ export function CameraView() {
         >
           {debugOpen ? 'Hide debug' : 'Show debug'}
         </button>
+        {debugOpen && (
+          <button
+            type="button"
+            className="debug-toggle"
+            onClick={() => {
+              const canvas = canvasRef.current
+              const payload = {
+                recordedAt: new Date().toISOString(),
+                dims: canvas
+                  ? { width: canvas.width, height: canvas.height }
+                  : null,
+                frames: exportFramesRef.current,
+              }
+              const blob = new Blob([JSON.stringify(payload, null, 2)], {
+                type: 'application/json',
+              })
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `landmarks-${Date.now()}.json`
+              a.click()
+              URL.revokeObjectURL(url)
+            }}
+          >
+            Export landmarks
+          </button>
+        )}
       </div>
       {debugOpen && <DebugPanel fps={fps} visibilities={visibilities} />}
     </div>

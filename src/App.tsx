@@ -10,7 +10,7 @@ function App() {
   const [view, setView] = useState<View>('intro')
 
   return (
-    <main className="app">
+    <main className={view === 'capture' ? 'app app--wide' : 'app'}>
       <h1 className="app-title">FitCheck</h1>
       {view === 'intro' && <IntroView onStart={() => setView('capture')} />}
       {view === 'capture' && <CaptureView onDone={() => setView('results')} />}
