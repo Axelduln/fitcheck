@@ -82,10 +82,19 @@ button.primary:hover {
   text-align: center;
 }
 
+.camera-status.status-ok {
+  background: rgba(22, 101, 52, 0.85);
+}
+
 .camera-error {
   padding: 1rem;
   border: 2px solid #dc2626;
   border-radius: 0.5rem;
+}
+
+.camera-controls {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .debug-toggle {

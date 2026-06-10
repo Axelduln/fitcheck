@@ -2,21 +2,35 @@ import { useEffect, useRef, useState } from 'react'
 import { DrawingUtils, PoseLandmarker } from '@mediapipe/tasks-vision'
 import { createPoseLandmarker, selectMostProminent } from '../lib/pose'
 import { FpsMeter } from '../lib/fps'
+import {
+  computeBodyStatus,
+  StatusDebouncer,
+  type BodyStatus,
+} from '../lib/bodyStatus'
+import { VoiceAnnouncer } from '../lib/speech'
 import { DebugPanel } from './DebugPanel'
 
 type CameraState = 'starting' | 'running' | 'denied' | 'unavailable' | 'error'
 
 const DEBUG_UPDATE_MS = 250
 
+const STATUS_MESSAGES: Record<BodyStatus, string> = {
+  none: 'No person detected — step into view',
+  partial: 'Whole body not visible — step back from the camera',
+  full: 'Full body detected — all measurement points tracked',
+}
+
 export function CameraView() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [state, setState] = useState<CameraState>('starting')
   const [mirrored, setMirrored] = useState(false)
-  const [personVisible, setPersonVisible] = useState(false)
+  const [bodyStatus, setBodyStatus] = useState<BodyStatus>('none')
   const [fps, setFps] = useState(0)
   const [visibilities, setVisibilities] = useState<number[]>([])
   const [debugOpen, setDebugOpen] = useState(false)
+  const [voiceOn, setVoiceOn] = useState(true)
+  const announcerRef = useRef<VoiceAnnouncer | null>(null)
 
   useEffect(() => {
     const video = videoRef.current
@@ -29,8 +43,10 @@ export function CameraView() {
     let landmarker: PoseLandmarker | null = null
     let lastVideoTime = -1
     let lastDebugUpdate = 0
-    let lastPersonVisible: boolean | null = null
     const fpsMeter = new FpsMeter()
+    const statusDebouncer = new StatusDebouncer()
+    const announcer = new VoiceAnnouncer()
+    announcerRef.current = announcer
 
     const frame = () => {
       if (cancelled || document.hidden) return
@@ -57,10 +73,10 @@ export function CameraView() {
         }
       }
 
-      const visible = pose !== null
-      if (visible !== lastPersonVisible) {
-        lastPersonVisible = visible
-        setPersonVisible(visible)
+      const stableStatus = statusDebouncer.tick(computeBodyStatus(pose), nowMs)
+      if (stableStatus !== null) {
+        setBodyStatus(stableStatus)
+        announcer.speak(STATUS_MESSAGES[stableStatus], nowMs)
       }
       if (nowMs - lastDebugUpdate >= DEBUG_UPDATE_MS) {
         lastDebugUpdate = nowMs
@@ -140,6 +156,8 @@ export function CameraView() {
       document.removeEventListener('visibilitychange', onVisibilityChange)
       stream?.getTracks().forEach((t) => t.stop())
       landmarker?.close()
+      announcer.stop()
+      announcerRef.current = null
     }
   }, [])
 
@@ -178,17 +196,38 @@ export function CameraView() {
         {state === 'starting' && (
           <p className="camera-status">Starting camera…</p>
         )}
-        {state === 'running' && !personVisible && (
-          <p className="camera-status">No person detected — step into view</p>
+        {state === 'running' && (
+          <p
+            className={`camera-status${bodyStatus === 'full' ? ' status-ok' : ''}`}
+          >
+            {STATUS_MESSAGES[bodyStatus]}
+          </p>
         )}
       </div>
-      <button
-        type="button"
-        className="debug-toggle"
-        onClick={() => setDebugOpen((open) => !open)}
-      >
-        {debugOpen ? 'Hide debug' : 'Show debug'}
-      </button>
+      <div className="camera-controls">
+        <button
+          type="button"
+          className="debug-toggle"
+          onClick={() => {
+            const next = !voiceOn
+            setVoiceOn(next)
+            const announcer = announcerRef.current
+            if (announcer) {
+              announcer.enabled = next
+              if (!next) announcer.stop()
+            }
+          }}
+        >
+          {voiceOn ? 'Voice on' : 'Voice off'}
+        </button>
+        <button
+          type="button"
+          className="debug-toggle"
+          onClick={() => setDebugOpen((open) => !open)}
+        >
+          {debugOpen ? 'Hide debug' : 'Show debug'}
+        </button>
+      </div>
       {debugOpen && <DebugPanel fps={fps} visibilities={visibilities} />}
     </div>
   )
