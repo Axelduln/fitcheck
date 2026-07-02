@@ -43,6 +43,11 @@ function App() {
         <h1 className="app-title">
           Fit<em>Check</em>
         </h1>
+        <p className="brand-spec">
+          body.scan v1
+          <br />
+          33 landmarks / 0 uploads
+        </p>
       </header>
       {view === 'intro' && <IntroView onStart={() => setView('capture')} />}
       {view === 'capture' && (
