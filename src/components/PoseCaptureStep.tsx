@@ -86,7 +86,11 @@ export function PoseCaptureStep({
   return (
     <div className="pose-capture">
       <CameraView onFrame={onFrame} onProfile={onProfile} quiet withMasks />
-      {countdown !== null && <div className="countdown">{countdown}</div>}
+      {countdown !== null && (
+        <div key={countdown} className="countdown">
+          {countdown}
+        </div>
+      )}
       <p className="measure-status">{message}</p>
     </div>
   )
