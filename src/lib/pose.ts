@@ -10,7 +10,8 @@ export type { NormalizedLandmark }
 // subpath (GitHub Pages: /fitcheck/).
 const BASE = import.meta.env.BASE_URL
 const WASM_PATH = `${BASE}wasm`
-const MODEL_PATH = `${BASE}models/pose_landmarker_full.task`
+const FULL_MODEL = `${BASE}models/pose_landmarker_full.task`
+const LITE_MODEL = `${BASE}models/pose_landmarker_lite.task`
 
 export interface PoseLandmarkerOptions {
   /** Enable segmentation masks (needed for circumference estimation). */
@@ -23,12 +24,19 @@ export async function createPoseLandmarker(
   options: PoseLandmarkerOptions = {},
 ): Promise<PoseLandmarker> {
   const fileset = await FilesetResolver.forVisionTasks(WASM_PATH)
-  return PoseLandmarker.createFromOptions(fileset, {
-    baseOptions: { modelAssetPath: MODEL_PATH, delegate: 'GPU' },
-    runningMode: 'VIDEO',
-    numPoses: 2,
-    outputSegmentationMasks: options.withMasks ?? false,
-  })
+  const make = (modelAssetPath: string) =>
+    PoseLandmarker.createFromOptions(fileset, {
+      baseOptions: { modelAssetPath, delegate: 'GPU' },
+      runningMode: 'VIDEO',
+      numPoses: 2,
+      outputSegmentationMasks: options.withMasks ?? false,
+    })
+  try {
+    return await make(FULL_MODEL)
+  } catch {
+    // low-end / constrained devices: fall back to the lite model
+    return make(LITE_MODEL)
+  }
 }
 
 /**

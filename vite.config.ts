@@ -3,10 +3,12 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
+  // GitHub Pages serves the app from /fitcheck/; dev stays at /
+  base: command === 'build' ? '/fitcheck/' : '/',
   plugins: [react()],
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
   },
-})
+}))
