@@ -12,6 +12,7 @@ import {
   summarizeRange,
   type RangeSummary,
 } from '../lib/stats'
+import { recommendSize, SIZE_CHARTS } from '../lib/sizing'
 import { cmToInches } from '../lib/units'
 
 interface ResultsViewProps {
@@ -77,6 +78,8 @@ function computeGirthRanges(
 
 export function ResultsView({ capture, onRestart }: ResultsViewProps) {
   const [unit, setUnit] = useState<'cm' | 'in'>('cm')
+  const [chartId, setChartId] = useState('unisex')
+  const [copied, setCopied] = useState(false)
   const ranges = useMemo(
     () => (capture ? computeRanges(capture) : null),
     [capture],
@@ -95,6 +98,33 @@ export function ResultsView({ capture, onRestart }: ResultsViewProps) {
         </button>
       </section>
     )
+  }
+
+  const chart = SIZE_CHARTS.find((c) => c.id === chartId) ?? SIZE_CHARTS[0]
+  const recommendation =
+    girthRanges && chart
+      ? recommendSize(chart, {
+          chestCm: girthRanges.Chest?.median ?? 0,
+          waistCm: girthRanges.Waist?.median ?? 0,
+          hipCm: girthRanges.Hips?.median ?? 0,
+          inseamCm: ranges.Inseam?.median,
+        })
+      : null
+
+  const copySummary = () => {
+    const lines = [
+      'FitCheck measurements',
+      ...Object.entries({ ...ranges, ...(girthRanges ?? {}) }).map(
+        ([label, summary]) => `${label}: ${formatRange(summary, unit)}`,
+      ),
+    ]
+    if (recommendation && chart) {
+      lines.push(`Recommended size (${chart.label}): ${recommendation.size}`)
+    }
+    void navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
   }
 
   return (
@@ -138,14 +168,46 @@ export function ResultsView({ capture, onRestart }: ResultsViewProps) {
             even light.
           </p>
         )}
+        {recommendation && (
+          <div className="sizing-card">
+            <div className="results-header">
+              <h2>Size recommendation</h2>
+              <div className="camera-controls">
+                {SIZE_CHARTS.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className={`debug-toggle${c.id === chartId ? ' chart-active' : ''}`}
+                    onClick={() => setChartId(c.id)}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <p className="size-value">{recommendation.size}</p>
+            {recommendation.notes.length > 0 && (
+              <ul className="size-notes">
+                {recommendation.notes.map((note) => (
+                  <li key={note}>{note}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
         <p className="disclaimer">
           Estimates from camera pose tracking — ranges show the measurement
           spread, not tailor-grade accuracy. Chest/waist/hips carry the widest
           uncertainty.
         </p>
-        <button type="button" className="primary" onClick={onRestart}>
-          Measure again
-        </button>
+        <div className="camera-controls">
+          <button type="button" className="primary" onClick={onRestart}>
+            Measure again
+          </button>
+          <button type="button" className="primary" onClick={copySummary}>
+            {copied ? 'Copied ✓' : 'Copy summary'}
+          </button>
+        </div>
       </div>
     </section>
   )
