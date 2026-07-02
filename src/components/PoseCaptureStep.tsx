@@ -19,6 +19,8 @@ interface PoseCaptureStepProps {
 
 const COUNTDOWN_BEEP_HZ = 660
 const CAPTURED_BEEP_HZ = 1320
+/** How long the "Captured" confirmation shows before advancing. */
+const CONFIRM_HOLD_MS = 1300
 
 export function PoseCaptureStep({
   mode,
@@ -27,6 +29,7 @@ export function PoseCaptureStep({
 }: PoseCaptureStepProps) {
   const [message, setMessage] = useState(instruction)
   const [countdown, setCountdown] = useState<number | null>(null)
+  const [confirmed, setConfirmed] = useState(false)
   const sessionRef = useRef(new CaptureCountdown())
   const announcerRef = useRef<VoiceAnnouncer | null>(null)
   const capturedRef = useRef(false)
@@ -71,13 +74,20 @@ export function PoseCaptureStep({
       } else {
         capturedRef.current = true
         setCountdown(null)
+        setConfirmed(true)
+        setMessage(
+          mode === 'front' ? 'Front pose captured' : 'Side pose captured',
+        )
         beep(CAPTURED_BEEP_HZ, 250)
-        announcer.stop()
-        onCaptured({
+        announcer.speak('Captured', nowMs, { force: true })
+        // Hold the confirmation on screen so the capture is unmistakable,
+        // then hand off (front → side pose, side → results).
+        const capture: CapturedPose = {
           frames: event.frames,
           dims,
           widthProfile: medianProfile(profilesRef.current),
-        })
+        }
+        window.setTimeout(() => onCaptured(capture), CONFIRM_HOLD_MS)
       }
     },
     [mode, onCaptured],
@@ -89,6 +99,11 @@ export function PoseCaptureStep({
       {countdown !== null && (
         <div key={countdown} className="countdown">
           {countdown}
+        </div>
+      )}
+      {confirmed && (
+        <div className="capture-flash" aria-hidden="true">
+          <span className="capture-check">✓ Captured</span>
         </div>
       )}
       <p className="measure-status">{message}</p>
