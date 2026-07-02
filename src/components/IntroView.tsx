@@ -6,8 +6,7 @@ export function IntroView({ onStart }: IntroViewProps) {
   return (
     <section className="view hero">
       <p className="hero-badge">
-        <span className="pulse-dot" />
-        100% on-device — nothing ever leaves your phone
+        <span className="pulse-dot" />[ 100% on-device — zero uploads ]
       </p>
       <h2 className="hero-title">
         Your size,
@@ -28,6 +27,18 @@ export function IntroView({ onStart }: IntroViewProps) {
         <li>Size S–XXL</li>
         <li>Works offline</li>
       </ul>
+      <div className="ticker" aria-hidden="true">
+        <span>
+          shoulder / arm / inseam / torso / chest / waist / hips / S–XXL
+          /&nbsp;shoulder / arm / inseam / torso / chest / waist / hips / S–XXL
+          /&nbsp;
+        </span>
+        <span>
+          shoulder / arm / inseam / torso / chest / waist / hips / S–XXL
+          /&nbsp;shoulder / arm / inseam / torso / chest / waist / hips / S–XXL
+          /&nbsp;
+        </span>
+      </div>
       <div className="scan-figure" aria-hidden="true">
         <span className="scan-beam" />
         <svg viewBox="0 0 64 96" xmlns="http://www.w3.org/2000/svg">
