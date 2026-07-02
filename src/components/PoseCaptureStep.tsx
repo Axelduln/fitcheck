@@ -4,8 +4,12 @@ import type { NormalizedLandmark } from '../lib/pose'
 import type { FrameDims } from '../lib/measurements'
 import { assessFrame, assessSideFrame, QUALITY_GUIDANCE } from '../lib/quality'
 import { CaptureCountdown, type CapturedPose } from '../lib/captureSession'
+import { medianProfile } from '../lib/silhouette'
 import { VoiceAnnouncer } from '../lib/speech'
 import { beep } from '../lib/audio'
+
+/** Rolling mask profiles kept for the capture-time median. */
+const PROFILE_BUFFER = 10
 
 interface PoseCaptureStepProps {
   mode: 'front' | 'side'
@@ -26,6 +30,13 @@ export function PoseCaptureStep({
   const sessionRef = useRef(new CaptureCountdown())
   const announcerRef = useRef<VoiceAnnouncer | null>(null)
   const capturedRef = useRef(false)
+  const profilesRef = useRef<number[][]>([])
+
+  const onProfile = useCallback((profile: number[]) => {
+    if (capturedRef.current) return
+    profilesRef.current.push(profile)
+    if (profilesRef.current.length > PROFILE_BUFFER) profilesRef.current.shift()
+  }, [])
 
   const onFrame = useCallback(
     (pose: NormalizedLandmark[] | null, dims: FrameDims, nowMs: number) => {
@@ -62,7 +73,11 @@ export function PoseCaptureStep({
         setCountdown(null)
         beep(CAPTURED_BEEP_HZ, 250)
         announcer.stop()
-        onCaptured({ frames: event.frames, dims })
+        onCaptured({
+          frames: event.frames,
+          dims,
+          widthProfile: medianProfile(profilesRef.current),
+        })
       }
     },
     [mode, onCaptured],
@@ -70,7 +85,7 @@ export function PoseCaptureStep({
 
   return (
     <div className="pose-capture">
-      <CameraView onFrame={onFrame} quiet />
+      <CameraView onFrame={onFrame} onProfile={onProfile} quiet withMasks />
       {countdown !== null && <div className="countdown">{countdown}</div>}
       <p className="measure-status">{message}</p>
     </div>

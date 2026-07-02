@@ -74,4 +74,20 @@ Notes:
 
 ## Milestone 4 — circumferences
 
-_(table added with Milestone 4)_
+Target: **±8 cm** on ≥3 real people, or this project's kill criterion
+triggers. Tape: chest at nipple height, waist at the narrowest point,
+hips at the widest point — snug but not compressing, over fitted
+clothing.
+
+**Status: NOT YET VALIDATED (n=0).** The ellipse correction factors
+(girth.ts, 0.97/section) and chest height fraction (0.22) are
+literature starting points, untuned. No circumference number should be
+trusted until at least 3 subjects are recorded here.
+
+| Date | Subject | Height cm | Measure | Tape cm | App range cm | Error cm | Within ±8? |
+| ---- | ------- | --------- | ------- | ------- | ------------ | -------- | ---------- |
+|      |         |           | Chest   |         |              |          |            |
+|      |         |           | Waist   |         |              |          |            |
+|      |         |           | Hips    |         |              |          |            |
+
+Per-subject failure analysis (clothing, mask quality, lighting):

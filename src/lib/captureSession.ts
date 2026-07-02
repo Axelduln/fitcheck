@@ -10,6 +10,11 @@ export interface CapturedPose {
   /** The last valid landmark frames leading up to the capture moment. */
   frames: NormalizedLandmark[][]
   dims: FrameDims
+  /**
+   * Median silhouette width per pixel row at capture time (from the
+   * segmentation mask) — the basis for circumference estimation.
+   */
+  widthProfile?: number[]
 }
 
 export interface CaptureResult {

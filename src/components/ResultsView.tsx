@@ -3,6 +3,11 @@ import type { CaptureResult } from '../lib/captureSession'
 import { computeCmPerPixel } from '../lib/calibration'
 import { measureFrame, type Measurements } from '../lib/measurements'
 import {
+  estimateCircumferences,
+  girthDataFromCapture,
+  GIRTH_UNCERTAINTY_FRACTION,
+} from '../lib/girth'
+import {
   confidenceLabel,
   summarizeRange,
   type RangeSummary,
@@ -49,10 +54,35 @@ function computeRanges(capture: CaptureResult) {
   }
 }
 
+/** Circumference ranges with the deliberately wider girth uncertainty. */
+function computeGirthRanges(
+  capture: CaptureResult,
+): Record<string, RangeSummary> | null {
+  const front = girthDataFromCapture(capture.front, capture.heightCm)
+  const side = girthDataFromCapture(capture.side, capture.heightCm)
+  if (!front || !side) return null
+  const girth = estimateCircumferences(front, side)
+  if (!girth) return null
+  const widen = (value: number): RangeSummary => ({
+    median: value,
+    low: value * (1 - GIRTH_UNCERTAINTY_FRACTION),
+    high: value * (1 + GIRTH_UNCERTAINTY_FRACTION),
+  })
+  return {
+    Chest: widen(girth.chestCm),
+    Waist: widen(girth.waistCm),
+    Hips: widen(girth.hipCm),
+  }
+}
+
 export function ResultsView({ capture, onRestart }: ResultsViewProps) {
   const [unit, setUnit] = useState<'cm' | 'in'>('cm')
   const ranges = useMemo(
     () => (capture ? computeRanges(capture) : null),
+    [capture],
+  )
+  const girthRanges = useMemo(
+    () => (capture ? computeGirthRanges(capture) : null),
     [capture],
   )
 
@@ -91,12 +121,27 @@ export function ResultsView({ capture, onRestart }: ResultsViewProps) {
                 </td>
               </tr>
             ))}
+            {girthRanges &&
+              Object.entries(girthRanges).map(([label, summary]) => (
+                <tr key={label}>
+                  <td>{label}</td>
+                  <td>{formatRange(summary, unit)}</td>
+                  <td className="confidence-low">estimate</td>
+                </tr>
+              ))}
           </tbody>
         </table>
+        {!girthRanges && (
+          <p className="disclaimer">
+            Chest, waist and hips could not be estimated from this capture — the
+            body silhouette was unclear. Try again with a plain background and
+            even light.
+          </p>
+        )}
         <p className="disclaimer">
-          Side pose captured ✓ — chest, waist and hip estimates are coming in a
-          later milestone. Estimates from camera pose tracking — ranges show the
-          measurement spread, not tailor-grade accuracy.
+          Estimates from camera pose tracking — ranges show the measurement
+          spread, not tailor-grade accuracy. Chest/waist/hips carry the widest
+          uncertainty.
         </p>
         <button type="button" className="primary" onClick={onRestart}>
           Measure again
