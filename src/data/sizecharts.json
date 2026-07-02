@@ -1,0 +1,149 @@
+{
+  "comment": "Generic size charts, cm ranges aligned to EN 13402 body-dimension intervals (approximate, not brand-specific). Structure allows adding per-brand charts without code changes: one object per chart, ranges [minInclusive, maxExclusive].",
+  "charts": [
+    {
+      "id": "unisex",
+      "label": "Unisex",
+      "sizes": [
+        {
+          "size": "XS",
+          "chestCm": [78, 86],
+          "waistCm": [62, 70],
+          "hipCm": [82, 90],
+          "inseamCm": [74, 79]
+        },
+        {
+          "size": "S",
+          "chestCm": [86, 94],
+          "waistCm": [70, 78],
+          "hipCm": [90, 98],
+          "inseamCm": [77, 82]
+        },
+        {
+          "size": "M",
+          "chestCm": [94, 102],
+          "waistCm": [78, 86],
+          "hipCm": [98, 106],
+          "inseamCm": [80, 85]
+        },
+        {
+          "size": "L",
+          "chestCm": [102, 110],
+          "waistCm": [86, 96],
+          "hipCm": [106, 114],
+          "inseamCm": [82, 87]
+        },
+        {
+          "size": "XL",
+          "chestCm": [110, 118],
+          "waistCm": [96, 106],
+          "hipCm": [114, 122],
+          "inseamCm": [84, 89]
+        },
+        {
+          "size": "XXL",
+          "chestCm": [118, 129],
+          "waistCm": [106, 119],
+          "hipCm": [122, 130],
+          "inseamCm": [85, 90]
+        }
+      ]
+    },
+    {
+      "id": "men",
+      "label": "Men",
+      "sizes": [
+        {
+          "size": "XS",
+          "chestCm": [78, 86],
+          "waistCm": [66, 74],
+          "hipCm": [82, 90],
+          "inseamCm": [76, 81]
+        },
+        {
+          "size": "S",
+          "chestCm": [86, 94],
+          "waistCm": [74, 82],
+          "hipCm": [90, 98],
+          "inseamCm": [79, 84]
+        },
+        {
+          "size": "M",
+          "chestCm": [94, 102],
+          "waistCm": [82, 90],
+          "hipCm": [98, 104],
+          "inseamCm": [81, 86]
+        },
+        {
+          "size": "L",
+          "chestCm": [102, 110],
+          "waistCm": [90, 100],
+          "hipCm": [104, 110],
+          "inseamCm": [83, 88]
+        },
+        {
+          "size": "XL",
+          "chestCm": [110, 118],
+          "waistCm": [100, 110],
+          "hipCm": [110, 118],
+          "inseamCm": [85, 90]
+        },
+        {
+          "size": "XXL",
+          "chestCm": [118, 129],
+          "waistCm": [110, 123],
+          "hipCm": [118, 126],
+          "inseamCm": [86, 91]
+        }
+      ]
+    },
+    {
+      "id": "women",
+      "label": "Women",
+      "sizes": [
+        {
+          "size": "XS",
+          "chestCm": [74, 82],
+          "waistCm": [58, 66],
+          "hipCm": [82, 90],
+          "inseamCm": [72, 77]
+        },
+        {
+          "size": "S",
+          "chestCm": [82, 90],
+          "waistCm": [66, 74],
+          "hipCm": [90, 98],
+          "inseamCm": [75, 80]
+        },
+        {
+          "size": "M",
+          "chestCm": [90, 98],
+          "waistCm": [74, 82],
+          "hipCm": [98, 104],
+          "inseamCm": [77, 82]
+        },
+        {
+          "size": "L",
+          "chestCm": [98, 107],
+          "waistCm": [82, 92],
+          "hipCm": [104, 112],
+          "inseamCm": [79, 84]
+        },
+        {
+          "size": "XL",
+          "chestCm": [107, 119],
+          "waistCm": [92, 104],
+          "hipCm": [112, 124],
+          "inseamCm": [80, 85]
+        },
+        {
+          "size": "XXL",
+          "chestCm": [119, 131],
+          "waistCm": [104, 117],
+          "hipCm": [124, 136],
+          "inseamCm": [81, 86]
+        }
+      ]
+    }
+  ]
+}
