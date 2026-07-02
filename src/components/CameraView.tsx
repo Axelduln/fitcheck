@@ -5,6 +5,7 @@ import {
   selectMostProminent,
   type NormalizedLandmark,
 } from '../lib/pose'
+import { extractWidthProfile } from '../lib/silhouette'
 import type { FrameDims } from '../lib/measurements'
 import { FpsMeter } from '../lib/fps'
 import {
@@ -88,15 +89,26 @@ interface CameraViewProps {
    * parent (capture wizard) provides its own guidance.
    */
   quiet?: boolean
+  /** Run segmentation masks and report the silhouette width profile. */
+  withMasks?: boolean
+  /** Called per frame with the mask's width-per-row profile. */
+  onProfile?: (profile: number[], dims: FrameDims, nowMs: number) => void
 }
 
-export function CameraView({ onFrame, quiet = false }: CameraViewProps) {
+export function CameraView({
+  onFrame,
+  quiet = false,
+  withMasks = false,
+  onProfile,
+}: CameraViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const onFrameRef = useRef(onFrame)
+  const onProfileRef = useRef(onProfile)
   const quietRef = useRef(quiet)
   useEffect(() => {
     onFrameRef.current = onFrame
+    onProfileRef.current = onProfile
     quietRef.current = quiet
   })
   const exportFramesRef = useRef<ExportFrame[]>([])
@@ -136,6 +148,25 @@ export function CameraView({ onFrame, quiet = false }: CameraViewProps) {
       const result = landmarker.detectForVideo(video, nowMs)
       const currentFps = fpsMeter.tick(nowMs)
       const pose = selectMostProminent(result.landmarks)
+
+      const mask = result.segmentationMasks?.[0]
+      if (mask) {
+        if (onProfileRef.current) {
+          const profile = extractWidthProfile(
+            mask.getAsFloat32Array(),
+            mask.width,
+            mask.height,
+          )
+          onProfileRef.current(
+            profile,
+            { width: mask.width, height: mask.height },
+            nowMs,
+          )
+        }
+        // MPMask objects must be released, and result arrays can hold
+        // one mask per detected pose
+        for (const m of result.segmentationMasks ?? []) m.close()
+      }
 
       const ctx = canvas.getContext('2d')
       if (ctx) {
@@ -215,7 +246,7 @@ export function CameraView({ onFrame, quiet = false }: CameraViewProps) {
             video: { facingMode: { ideal: 'environment' } },
             audio: false,
           }),
-          createPoseLandmarker(),
+          createPoseLandmarker({ withMasks }),
         ])
         if (cancelled) {
           mediaStream.getTracks().forEach((t) => t.stop())
@@ -265,7 +296,7 @@ export function CameraView({ onFrame, quiet = false }: CameraViewProps) {
       announcer.stop()
       announcerRef.current = null
     }
-  }, [])
+  }, [withMasks])
 
   if (state === 'denied') {
     return (
