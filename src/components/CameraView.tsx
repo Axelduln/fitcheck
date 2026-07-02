@@ -83,14 +83,21 @@ interface CameraViewProps {
     dims: FrameDims,
     nowMs: number,
   ) => void
+  /**
+   * Suppress the built-in body-status voice and overlay — used when a
+   * parent (capture wizard) provides its own guidance.
+   */
+  quiet?: boolean
 }
 
-export function CameraView({ onFrame }: CameraViewProps) {
+export function CameraView({ onFrame, quiet = false }: CameraViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const onFrameRef = useRef(onFrame)
+  const quietRef = useRef(quiet)
   useEffect(() => {
     onFrameRef.current = onFrame
+    quietRef.current = quiet
   })
   const exportFramesRef = useRef<ExportFrame[]>([])
   const [state, setState] = useState<CameraState>('starting')
@@ -162,7 +169,9 @@ export function CameraView({ onFrame }: CameraViewProps) {
       const stableStatus = statusDebouncer.tick(computeBodyStatus(pose), nowMs)
       if (stableStatus !== null) {
         setBodyStatus(stableStatus)
-        announcer.speak(STATUS_MESSAGES[stableStatus], nowMs)
+        if (!quietRef.current) {
+          announcer.speak(STATUS_MESSAGES[stableStatus], nowMs)
+        }
       }
 
       onFrameRef.current?.(
@@ -293,7 +302,7 @@ export function CameraView({ onFrame }: CameraViewProps) {
         {state === 'starting' && (
           <p className="camera-status">Starting camera…</p>
         )}
-        {state === 'running' && (
+        {state === 'running' && !quiet && (
           <p
             className={`camera-status${bodyStatus === 'full' ? ' status-ok' : ''}`}
           >
