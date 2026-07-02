@@ -1,19 +1,31 @@
 :root {
+  --bg: #06080f;
+  --bg-2: #0b0f1c;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-2: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text: #e9edf8;
+  --muted: #8f99b3;
+  --accent: #22d3ee;
+  --accent-2: #8b5cf6;
+  --grad: linear-gradient(120deg, #22d3ee 0%, #60a5fa 50%, #8b5cf6 100%);
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --radius: 16px;
+  --radius-sm: 10px;
+
   font-family:
+    'Space Grotesk Variable',
     system-ui,
     -apple-system,
     sans-serif;
-  line-height: 1.5;
-  color: #1a1a1a;
-  background: #fff;
-  color-scheme: light dark;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #eee;
-    background: #111;
-  }
+  line-height: 1.55;
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -23,4 +35,106 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+/* ---- ambient background: gradient orbs + grid ---- */
+
+.bg-fx {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-fx::after {
+  /* faint blueprint grid, fading toward the edges */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 20%,
+    #000 30%,
+    transparent 75%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 70% at 50% 20%,
+    #000 30%,
+    transparent 75%
+  );
+}
+
+.bg-orb {
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.3;
+  will-change: transform;
+}
+
+.bg-orb--a {
+  top: -25vmax;
+  left: -15vmax;
+  background: radial-gradient(circle at center, #22d3ee, transparent 65%);
+  animation: drift-a 26s ease-in-out infinite alternate;
+}
+
+.bg-orb--b {
+  bottom: -30vmax;
+  right: -18vmax;
+  background: radial-gradient(circle at center, #8b5cf6, transparent 65%);
+  animation: drift-b 32s ease-in-out infinite alternate;
+}
+
+@keyframes drift-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(10vmax, 6vmax, 0) scale(1.15);
+  }
+}
+
+@keyframes drift-b {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.1);
+  }
+  to {
+    transform: translate3d(-8vmax, -8vmax, 0) scale(0.95);
+  }
+}
+
+/* ---- shared motion ---- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+::selection {
+  background: rgba(34, 211, 238, 0.35);
 }

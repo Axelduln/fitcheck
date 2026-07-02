@@ -325,9 +325,21 @@ export function CameraView({
     )
   }
 
+  const stageClass = [
+    'camera-stage',
+    mirrored ? 'mirrored' : '',
+    state === 'running' && bodyStatus === 'full' ? 'tracking' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div className="camera-view">
-      <div className={`camera-stage${mirrored ? ' mirrored' : ''}`}>
+      <div className={stageClass}>
+        <span className="vf-corner vf-corner--tl" aria-hidden="true" />
+        <span className="vf-corner vf-corner--tr" aria-hidden="true" />
+        <span className="vf-corner vf-corner--bl" aria-hidden="true" />
+        <span className="vf-corner vf-corner--br" aria-hidden="true" />
         <video ref={videoRef} playsInline muted />
         <canvas ref={canvasRef} />
         {state === 'starting' && (

@@ -25,7 +25,10 @@ export function CaptureWizard({ onComplete }: CaptureWizardProps) {
   if (step === 'instructions') {
     return (
       <section className="view">
-        <h2>Before you start</h2>
+        <h2 className="step-title">
+          <span className="step-eyebrow">Setup</span>
+          Before you start
+        </h2>
         <ul className="instructions-list">
           <li>Wear fitted clothing — baggy clothes hide your shape.</li>
           <li>Stand in front of a plain background, evenly lit.</li>
@@ -95,7 +98,10 @@ export function CaptureWizard({ onComplete }: CaptureWizardProps) {
   if (step === 'front') {
     return (
       <section className="view">
-        <h2 className="step-title">Pose 1 of 2 — face the camera</h2>
+        <h2 className="step-title">
+          <span className="step-eyebrow">Pose 1 of 2</span>
+          Face the camera
+        </h2>
         <PoseCaptureStep
           mode="front"
           instruction="Face the camera, whole body visible"
@@ -113,7 +119,10 @@ export function CaptureWizard({ onComplete }: CaptureWizardProps) {
 
   return (
     <section className="view">
-      <h2 className="step-title">Pose 2 of 2 — turn sideways</h2>
+      <h2 className="step-title">
+        <span className="step-eyebrow">Pose 2 of 2</span>
+        Turn sideways
+      </h2>
       <PoseCaptureStep
         mode="side"
         instruction="Turn sideways to the camera"
