@@ -103,6 +103,7 @@ export function CaptureWizard({ onComplete }: CaptureWizardProps) {
           Face the camera
         </h2>
         <PoseCaptureStep
+          key="front"
           mode="front"
           instruction="Face the camera, whole body visible"
           onCaptured={(capture) => {
@@ -124,6 +125,7 @@ export function CaptureWizard({ onComplete }: CaptureWizardProps) {
         Turn sideways
       </h2>
       <PoseCaptureStep
+        key="side"
         mode="side"
         instruction="Turn sideways to the camera"
         onCaptured={(capture) => {
