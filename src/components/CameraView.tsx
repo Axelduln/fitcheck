@@ -5,7 +5,11 @@ import {
   selectMostProminent,
   type NormalizedLandmark,
 } from '../lib/pose'
-import { extractWidthProfile } from '../lib/silhouette'
+import {
+  extractWidthProfile,
+  extractTorsoWidthProfile,
+  type TorsoBand,
+} from '../lib/silhouette'
 import type { FrameDims } from '../lib/measurements'
 import { FpsMeter } from '../lib/fps'
 import {
@@ -95,6 +99,27 @@ interface CameraViewProps {
   onProfile?: (profile: number[], dims: FrameDims, nowMs: number) => void
 }
 
+/** Torso x/row bounds in mask pixels from shoulder (11/12) + hip (23/24). */
+function torsoBandFromPose(
+  pose: NormalizedLandmark[],
+  width: number,
+  height: number,
+): TorsoBand | null {
+  const ls = pose[11]
+  const rs = pose[12]
+  const lh = pose[23]
+  const rh = pose[24]
+  if (!ls || !rs || !lh || !rh) return null
+  return {
+    shoulderRowPx: ((ls.y + rs.y) / 2) * height,
+    hipRowPx: ((lh.y + rh.y) / 2) * height,
+    shoulderXMinPx: Math.min(ls.x, rs.x) * width,
+    shoulderXMaxPx: Math.max(ls.x, rs.x) * width,
+    hipXMinPx: Math.min(lh.x, rh.x) * width,
+    hipXMaxPx: Math.max(lh.x, rh.x) * width,
+  }
+}
+
 export function CameraView({
   onFrame,
   quiet = false,
@@ -152,11 +177,21 @@ export function CameraView({
       const mask = result.segmentationMasks?.[0]
       if (mask) {
         if (onProfileRef.current) {
-          const profile = extractWidthProfile(
-            mask.getAsFloat32Array(),
-            mask.width,
-            mask.height,
-          )
+          const band = pose
+            ? torsoBandFromPose(pose, mask.width, mask.height)
+            : null
+          const profile = band
+            ? extractTorsoWidthProfile(
+                mask.getAsFloat32Array(),
+                mask.width,
+                mask.height,
+                band,
+              )
+            : extractWidthProfile(
+                mask.getAsFloat32Array(),
+                mask.width,
+                mask.height,
+              )
           onProfileRef.current(
             profile,
             { width: mask.width, height: mask.height },
