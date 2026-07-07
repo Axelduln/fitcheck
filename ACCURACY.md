@@ -32,9 +32,13 @@ plainly here with options, not papered over.
 | 2026-06-10 | Alex r3 | 184       | Arm length     | 55–56   | 57–59        | ~2.5     | ✅         |
 | 2026-06-10 | Alex r3 | 184       | Inseam (v3)    | 87–88   | 85–87        | ~1.5     | ✅         |
 | 2026-06-10 | Alex r3 | 184       | Torso length   | 44–46\* | 54–56        | n/a\*    | see note   |
+| 2026-07-03 | Alex r4 | 184       | Shoulder width | 43      | ≈45          | ~2       | ✅         |
+| 2026-07-03 | Alex r4 | 184       | Arm length     | 55–56   | 57–58        | ~2       | ✅         |
+| 2026-07-03 | Alex r4 | 184       | Inseam         | 87–88   | ≈85          | ~2.5     | ✅         |
+| 2026-07-03 | Alex r4 | 184       | Torso length   | 44–46\* | 56–57        | n/a\*    | see note   |
 
 **Milestone 2 verdict: PASS** — shoulder, arm, and inseam all within
-±4 cm on the final formulas (r3, all high confidence).
+±4 cm on the final formulas (r3 + r4, all high confidence).
 
 Notes:
 
@@ -84,10 +88,22 @@ clothing.
 literature starting points, untuned. No circumference number should be
 trusted until at least 3 subjects are recorded here.
 
-| Date | Subject | Height cm | Measure | Tape cm | App range cm | Error cm | Within ±8? |
-| ---- | ------- | --------- | ------- | ------- | ------------ | -------- | ---------- |
-|      |         |           | Chest   |         |              |          |            |
-|      |         |           | Waist   |         |              |          |            |
-|      |         |           | Hips    |         |              |          |            |
+| Date       | Subject    | Height cm | Measure | Tape cm | App range cm | Plausible? |
+| ---------- | ---------- | --------- | ------- | ------- | ------------ | ---------- |
+| 2026-07-03 | Alex g1 v1 | 184       | Chest   | (tbd)   | 124–140      | ❌ way high |
+| 2026-07-03 | Alex g1 v1 | 184       | Waist   | (tbd)   | 125–141      | ❌ way high |
+| 2026-07-03 | Alex g1 v1 | 184       | Hips    | (tbd)   | 153–172      | ❌ way high |
 
 Per-subject failure analysis (clothing, mask quality, lighting):
+
+- **g1 v1 (2026-07-03): silhouette width included the arms.**
+  `extractWidthProfile` took the full left→right mask extent per row, so
+  at chest/waist/hip height it measured shoulder-to-hand span, not torso
+  width — inflating every circumference by ~30–40 cm (chest ~132 for a
+  ~100 cm real chest). This also forced the size recommendation to XXL
+  on every chart, since ~132 cm is above every chart's top row. Fix v2:
+  clip the width scan to the torso column (band interpolated between the
+  shoulder-x span and hip-x span from landmarks, small margin). Arms in
+  A-pose / hands beyond the hips fall outside the band. Re-test needed;
+  the ellipse correction (0.97) and chest fraction (0.22) remain untuned
+  on top of this.
