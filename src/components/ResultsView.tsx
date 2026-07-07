@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { ScanLens } from './ScanLens'
 import type { CaptureResult } from '../lib/captureSession'
 import { computeCmPerPixel } from '../lib/calibration'
 import { measureFrame, type Measurements } from '../lib/measurements'
@@ -128,10 +129,31 @@ export function ResultsView({ capture, onRestart }: ResultsViewProps) {
   }
 
   return (
-    <section className="view">
+    <ScanLens
+      contentClassName="view"
+      annotations={
+        <>
+          <span className="anno" style={{ top: '4%', right: '3%' }}>
+            confidence · p10–p90
+          </span>
+          <span className="anno anno--dim" style={{ top: '38%', left: '1%' }}>
+            girth · ellipse fit
+          </span>
+          <span className="anno-cross" style={{ top: '20%', left: '10%' }}>
+            +
+          </span>
+          <span className="anno-cross" style={{ top: '62%', right: '8%' }}>
+            +
+          </span>
+        </>
+      }
+    >
       <div className="results">
         <div className="results-header">
-          <h2>Your measurements</h2>
+          <div>
+            <span className="step-eyebrow">Scan complete</span>
+            <h2 className="results-title">Your numbers.</h2>
+          </div>
           <button
             type="button"
             className="debug-toggle"
@@ -185,7 +207,12 @@ export function ResultsView({ capture, onRestart }: ResultsViewProps) {
                 ))}
               </div>
             </div>
-            <p className="size-value">{recommendation.size}</p>
+            <div className="size-stamp">
+              <p className="size-value">{recommendation.size}</p>
+              <span className="size-stamp-caption">
+                {chart?.label} · EN 13402
+              </span>
+            </div>
             {recommendation.notes.length > 0 && (
               <ul className="size-notes">
                 {recommendation.notes.map((note) => (
@@ -209,6 +236,6 @@ export function ResultsView({ capture, onRestart }: ResultsViewProps) {
           </button>
         </div>
       </div>
-    </section>
+    </ScanLens>
   )
 }
