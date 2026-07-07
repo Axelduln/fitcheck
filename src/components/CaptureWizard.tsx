@@ -95,40 +95,34 @@ export function CaptureWizard({ onComplete }: CaptureWizardProps) {
     )
   }
 
-  if (step === 'front') {
-    return (
-      <section className="view">
-        <h2 className="step-title">
-          <span className="step-eyebrow">Pose 1 of 2</span>
-          Face the camera
-        </h2>
-        <PoseCaptureStep
-          key="front"
-          mode="front"
-          instruction="Face the camera, whole body visible"
-          onCaptured={(capture) => {
+  // Front and side share ONE tree position with no key, so the camera
+  // and pose model stay alive across the pose change — only the capture
+  // session inside PoseCaptureStep resets (no black "starting camera"
+  // gap between poses).
+  return (
+    <section className="view">
+      <h2 className="step-title">
+        <span className="step-eyebrow">
+          {step === 'front' ? 'Pose 1 of 2' : 'Pose 2 of 2'}
+        </span>
+        {step === 'front' ? 'Face the camera' : 'Turn sideways'}
+      </h2>
+      <PoseCaptureStep
+        mode={step === 'front' ? 'front' : 'side'}
+        instruction={
+          step === 'front'
+            ? 'Face the camera, whole body visible'
+            : 'Turn sideways to the camera'
+        }
+        onCaptured={(capture) => {
+          if (step === 'front') {
             frontRef.current = capture
             announce(
               'Front pose captured. Now turn ninety degrees to your side and hold still.',
             )
             setStep('side')
-          }}
-        />
-      </section>
-    )
-  }
-
-  return (
-    <section className="view">
-      <h2 className="step-title">
-        <span className="step-eyebrow">Pose 2 of 2</span>
-        Turn sideways
-      </h2>
-      <PoseCaptureStep
-        key="side"
-        mode="side"
-        instruction="Turn sideways to the camera"
-        onCaptured={(capture) => {
+            return
+          }
           const front = frontRef.current
           if (!front || heightCm === null) return
           announce('Side pose captured. All done — your results are ready.')
