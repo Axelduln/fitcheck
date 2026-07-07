@@ -109,6 +109,14 @@ export function PoseCaptureStep({
   return (
     <div className="pose-capture">
       <CameraView onFrame={onFrame} onProfile={onProfile} quiet withMasks />
+      <div className="hud-tag" aria-hidden="true">
+        <span className="hud-dot" />
+        {mode === 'front' ? 'scan 01 · front' : 'scan 02 · side'}
+      </div>
+      <div className="hud-segs" aria-hidden="true">
+        <span className="hud-seg on" />
+        <span className={mode === 'side' ? 'hud-seg on' : 'hud-seg'} />
+      </div>
       {countdown !== null && (
         <div key={countdown} className="countdown">
           {countdown}

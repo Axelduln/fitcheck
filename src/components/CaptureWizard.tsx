@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { PoseCaptureStep } from './PoseCaptureStep'
+import { ScanLens } from './ScanLens'
 import type { CapturedPose, CaptureResult } from '../lib/captureSession'
 import { VoiceAnnouncer } from '../lib/speech'
 
@@ -8,6 +9,12 @@ type WizardStep = 'instructions' | 'height' | 'front' | 'side'
 interface CaptureWizardProps {
   onComplete: (result: CaptureResult) => void
 }
+
+/** Ruler rendering scale: 6 px per cm. */
+const RULER_PX_PER_CM = 6
+const RULER_MIN_CM = 100
+const RULER_MAX_CM = 250
+const RULER_FALLBACK_CM = 175
 
 export function CaptureWizard({ onComplete }: CaptureWizardProps) {
   const [step, setStep] = useState<WizardStep>('instructions')
@@ -24,21 +31,46 @@ export function CaptureWizard({ onComplete }: CaptureWizardProps) {
 
   if (step === 'instructions') {
     return (
-      <section className="view">
+      <ScanLens
+        contentClassName="view"
+        annotations={
+          <>
+            <span className="anno" style={{ top: '6%', right: '4%' }}>
+              pre-flight · 5 checks
+            </span>
+            <span className="anno anno--dim" style={{ top: '48%', left: '2%' }}>
+              audio · voice guidance
+            </span>
+            <span className="anno-cross" style={{ top: '26%', right: '12%' }}>
+              +
+            </span>
+            <span className="anno-cross" style={{ top: '72%', left: '8%' }}>
+              +
+            </span>
+          </>
+        }
+      >
         <h2 className="step-title">
           <span className="step-eyebrow">Setup</span>
           Before you start
         </h2>
         <ul className="instructions-list">
-          <li>Wear fitted clothing — baggy clothes hide your shape.</li>
-          <li>Stand in front of a plain background, evenly lit.</li>
-          <li>Prop the device upright, roughly hip height.</li>
-          <li>You will stand about 3 meters away.</li>
           <li>
-            The app speaks all guidance out loud — you don't need to read the
-            screen while posing.
+            <strong>Fitted clothing.</strong>&nbsp;Baggy hides your shape.
           </li>
-          <li>Two poses are captured: facing the camera, then sideways.</li>
+          <li>
+            <strong>Plain background,</strong>&nbsp;even light.
+          </li>
+          <li>
+            <strong>Prop your device</strong>&nbsp;upright at hip height.
+          </li>
+          <li>
+            <strong>Give it 3 meters.</strong>&nbsp;It needs your whole body.
+          </li>
+          <li>
+            <strong>Sound on.</strong>&nbsp;A voice walks you through both poses
+            — front, then sideways.
+          </li>
         </ul>
         <button
           type="button"
@@ -47,16 +79,27 @@ export function CaptureWizard({ onComplete }: CaptureWizardProps) {
         >
           I'm ready
         </button>
-      </section>
+      </ScanLens>
     )
   }
 
   if (step === 'height') {
+    const parsed = Number(heightInput.replace(',', '.'))
+    const rulerCm =
+      Number.isFinite(parsed) &&
+      parsed >= RULER_MIN_CM &&
+      parsed <= RULER_MAX_CM
+        ? parsed
+        : RULER_FALLBACK_CM
+
     return (
       <section className="view">
-        <p>
-          Enter your body height — it calibrates the camera so pixel distances
-          become centimeters.
+        <h2 className="step-title">
+          <span className="step-eyebrow">Calibration</span>
+          How tall are you?
+        </h2>
+        <p className="lede">
+          The only number you enter — it turns camera pixels into centimeters.
         </p>
         <form
           className="height-form"
@@ -86,6 +129,28 @@ export function CaptureWizard({ onComplete }: CaptureWizardProps) {
             value={heightInput}
             onChange={(e) => setHeightInput(e.target.value)}
           />
+          <div className="ruler-wrap" aria-hidden="true">
+            <div
+              className="ruler"
+              style={{
+                transform: `translateX(${-rulerCm * RULER_PX_PER_CM}px)`,
+              }}
+            >
+              {Array.from({ length: 16 }, (_, i) => {
+                const v = RULER_MIN_CM + i * 10
+                return (
+                  <span
+                    key={v}
+                    className="ruler-major"
+                    style={{ left: v * RULER_PX_PER_CM }}
+                  >
+                    {v}
+                  </span>
+                )
+              })}
+            </div>
+            <span className="ruler-needle" />
+          </div>
           {heightError && <p className="form-error">{heightError}</p>}
           <button type="submit" className="primary">
             Use this height

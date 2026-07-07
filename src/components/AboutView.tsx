@@ -5,7 +5,10 @@ interface AboutViewProps {
 export function AboutView({ onBack }: AboutViewProps) {
   return (
     <section className="view">
-      <h2>How it works</h2>
+      <h2 className="step-title">
+        <span className="step-eyebrow">The method</span>
+        How it works
+      </h2>
       <p>
         FitCheck runs a pose-estimation model (MediaPipe PoseLandmarker)
         directly in your browser. Your entered height calibrates the camera
@@ -16,7 +19,10 @@ export function AboutView({ onBack }: AboutViewProps) {
         estimates have real uncertainty — treat them as sizing guidance, not
         tailor measurements.
       </p>
-      <h2>Privacy</h2>
+      <h2 className="step-title">
+        <span className="step-eyebrow">The promise</span>
+        Privacy
+      </h2>
       <p>
         Nothing leaves your device. There is no server, no account, no
         analytics, and no cookies: the camera stream, the pose landmarks and

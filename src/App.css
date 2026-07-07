@@ -1015,3 +1015,243 @@ button.ghost:hover,
     gap: 1.25rem;
   }
 }
+
+/* ---- inner screens: lens reuse, ruler, HUD, stamp ---- */
+
+.lens-wrap {
+  position: relative;
+  --mx: 50%;
+  --my: 30%;
+}
+
+.lens-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* instructions: checklist rows react to hover */
+.instructions-list li {
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.instructions-list li:hover {
+  border-color: var(--accent);
+  transform: translateX(4px);
+}
+
+.instructions-list li:hover::before {
+  color: var(--accent);
+  background: none;
+  -webkit-text-fill-color: var(--accent);
+}
+
+.instructions-list strong {
+  color: var(--text);
+}
+
+.instructions-list li {
+  color: var(--muted);
+}
+
+/* height: sliding tape ruler */
+.ruler-wrap {
+  position: relative;
+  height: 64px;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.ruler {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 1600px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--border-strong) 0 1px,
+    transparent 1px 6px
+  );
+  background-size: 100% 14px;
+  background-position: 0 bottom;
+  background-repeat: no-repeat;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.ruler-major {
+  position: absolute;
+  bottom: 0;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  padding-bottom: 26px;
+}
+
+.ruler-major::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 1px;
+  height: 24px;
+  background: var(--text);
+  opacity: 0.7;
+}
+
+.ruler-needle {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(255, 210, 30, 0.55);
+}
+
+/* camera HUD */
+.hud-tag {
+  position: absolute;
+  top: 14px;
+  left: 46px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: rgba(4, 6, 12, 0.72);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  pointer-events: none;
+}
+
+.hud-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: hud-pulse 1.8s ease infinite;
+}
+
+@keyframes hud-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.hud-segs {
+  position: absolute;
+  top: 20px;
+  right: 46px;
+  z-index: 7;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.hud-seg {
+  width: 26px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-strong);
+}
+
+.hud-seg.on {
+  background: var(--accent);
+}
+
+/* results */
+.results-title {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.results-table tbody tr {
+  animation: rise 0.4s ease backwards;
+  transition: background 0.15s ease;
+}
+
+.results-table tbody tr:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+.results-table tbody tr:nth-child(3) {
+  animation-delay: 0.1s;
+}
+
+.results-table tbody tr:nth-child(4) {
+  animation-delay: 0.15s;
+}
+
+.results-table tbody tr:nth-child(5) {
+  animation-delay: 0.2s;
+}
+
+.results-table tbody tr:nth-child(6) {
+  animation-delay: 0.25s;
+}
+
+.results-table tbody tr:nth-child(7) {
+  animation-delay: 0.3s;
+}
+
+.results-table tbody tr:hover {
+  background: rgba(255, 210, 30, 0.05);
+}
+
+.results-table tbody tr:hover td:first-child {
+  color: var(--text);
+}
+
+/* size stamp — like a tailor's mark */
+.size-stamp {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.6rem 2.2rem 0.9rem;
+  border: 3px solid var(--accent);
+  border-radius: var(--radius);
+  transform: rotate(-3deg);
+  box-shadow: var(--hard-shadow);
+  animation: stamp-in 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) 0.25s backwards;
+}
+
+@keyframes stamp-in {
+  from {
+    opacity: 0;
+    transform: rotate(-10deg) scale(1.5);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-3deg) scale(1);
+  }
+}
+
+.size-stamp .size-value {
+  font-size: 4rem;
+  text-align: center;
+}
+
+.size-stamp-caption {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
