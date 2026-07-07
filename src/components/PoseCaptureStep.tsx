@@ -34,6 +34,7 @@ export function PoseCaptureStep({
   const announcerRef = useRef<VoiceAnnouncer | null>(null)
   const capturedRef = useRef(false)
   const profilesRef = useRef<number[][]>([])
+  const activeModeRef = useRef(mode)
 
   const onProfile = useCallback((profile: number[]) => {
     if (capturedRef.current) return
@@ -43,6 +44,18 @@ export function PoseCaptureStep({
 
   const onFrame = useCallback(
     (pose: NormalizedLandmark[] | null, dims: FrameDims, nowMs: number) => {
+      // New pose (front → side): the camera keeps running underneath —
+      // only the capture session restarts, on the first frame under the
+      // new mode.
+      if (activeModeRef.current !== mode) {
+        activeModeRef.current = mode
+        sessionRef.current = new CaptureCountdown()
+        capturedRef.current = false
+        profilesRef.current = []
+        setConfirmed(false)
+        setCountdown(null)
+        setMessage(instruction)
+      }
       if (capturedRef.current) return
       announcerRef.current ??= new VoiceAnnouncer()
       const announcer = announcerRef.current
@@ -90,7 +103,7 @@ export function PoseCaptureStep({
         window.setTimeout(() => onCaptured(capture), CONFIRM_HOLD_MS)
       }
     },
-    [mode, onCaptured],
+    [mode, instruction, onCaptured],
   )
 
   return (
