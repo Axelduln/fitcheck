@@ -12,12 +12,16 @@ function App() {
   const [view, setView] = useState<View>('intro')
   const [capture, setCapture] = useState<CaptureResult | null>(null)
 
+  const containerClass =
+    view === 'capture'
+      ? 'app app--wide'
+      : view === 'intro'
+        ? 'app app--landing'
+        : 'app'
+
   return (
-    <main className={view === 'capture' ? 'app app--wide' : 'app'}>
-      <div className="bg-fx" aria-hidden="true">
-        <span className="bg-orb bg-orb--a" />
-        <span className="bg-orb bg-orb--b" />
-      </div>
+    <main className={containerClass}>
+      <div className="bg-fx" aria-hidden="true" />
       <header className="brand">
         <svg
           className="brand-mark"
@@ -27,8 +31,8 @@ function App() {
         >
           <defs>
             <linearGradient id="bm" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#22d3ee" />
-              <stop offset="1" stopColor="#8b5cf6" />
+              <stop offset="0" stopColor="#ffd21e" />
+              <stop offset="1" stopColor="#f2f0ea" />
             </linearGradient>
           </defs>
           <circle cx="32" cy="15" r="7" fill="url(#bm)" />
